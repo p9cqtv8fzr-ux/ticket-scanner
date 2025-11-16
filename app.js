@@ -32,6 +32,21 @@ const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
+let resultClearTimeoutId = null;
+
+function scheduleClearResult() {
+  // cancel any previous pending clear
+  if (resultClearTimeoutId) {
+    clearTimeout(resultClearTimeoutId);
+  }
+
+  resultClearTimeoutId = setTimeout(() => {
+    resultMessageEl.textContent = "";
+    resultMessageEl.className = "";
+  }, 500); // 1000 ms = 1 second; increase if this feels too fast
+}
+
+
 // New elements for QR scanner
 const scannerSectionEl = document.getElementById("scannerSection");
 const cameraStatusEl = document.getElementById("cameraStatus");
@@ -67,18 +82,21 @@ function checkTicket(codeRaw) {
   resultMessageEl.className = "";
   if (!code) {
     resultMessageEl.textContent = "Please enter a ticket code.";
+    scheduleClearResult();
     return;
   }
 
   if (!validTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" is NOT valid.`;
     resultMessageEl.classList.add("result-invalid");
+    scheduleClearResult();
     return;
   }
 
   if (usedTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" was already used.`;
     resultMessageEl.classList.add("result-used");
+    scheduleClearResult();
     return;
   }
 
@@ -87,6 +105,7 @@ usedTickets.add(code);
 saveUsedTicketsToStorage();
 resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
 resultMessageEl.classList.add("result-valid");
+  scheduleClearResult();
 
 }
 
