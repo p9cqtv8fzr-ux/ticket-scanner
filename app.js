@@ -1,6 +1,32 @@
 let validTickets = new Set();
 let usedTickets = new Set();
 
+const USED_TICKETS_KEY = "usedTickets";
+
+function loadUsedTicketsFromStorage() {
+  try {
+    const stored = localStorage.getItem(USED_TICKETS_KEY);
+    if (!stored) return;
+
+    const arr = JSON.parse(stored);
+    if (Array.isArray(arr)) {
+      arr.forEach(code => usedTickets.add(code));
+    }
+  } catch (e) {
+    console.error("Failed to load used tickets from storage:", e);
+  }
+}
+
+function saveUsedTicketsToStorage() {
+  try {
+    const arr = Array.from(usedTickets);
+    localStorage.setItem(USED_TICKETS_KEY, JSON.stringify(arr));
+  } catch (e) {
+    console.error("Failed to save used tickets to storage:", e);
+  }
+}
+
+
 const statusEl = document.getElementById("status");
 const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
@@ -57,9 +83,11 @@ function checkTicket(codeRaw) {
   }
 
   // Mark as used
-  usedTickets.add(code);
-  resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
-  resultMessageEl.classList.add("result-valid");
+usedTickets.add(code);
+saveUsedTicketsToStorage();
+resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
+resultMessageEl.classList.add("result-valid");
+
 }
 
 // 3. Manual input event listeners
@@ -155,4 +183,6 @@ if (startScannerButtonEl) {
 }
 
 // Initialize
+loadUsedTicketsFromStorage();
 loadTickets();
+
