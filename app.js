@@ -17,6 +17,13 @@ function loadUsedTicketsFromStorage() {
   }
 }
 
+function resetUsedTickets() {
+  usedTickets.clear();                       // clear the Set in memory
+  localStorage.removeItem(USED_TICKETS_KEY); // remove from localStorage
+  resultMessageEl.className = "";
+  resultMessageEl.textContent = "Used tickets reset on this device.";
+}
+
 function saveUsedTicketsToStorage() {
   try {
     const arr = Array.from(usedTickets);
