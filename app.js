@@ -78,7 +78,7 @@ function flashBody(colorClass) {
   // Remove it shortly after to "flash"
   flashTimeoutId = setTimeout(() => {
     document.body.classList.remove(colorClass);
-  }, 150); // 150ms flash; tweak longer if you want
+  }, 800); // 150ms flash; tweak longer if you want
 }
 
 
