@@ -43,7 +43,7 @@ function scheduleClearResult() {
   resultClearTimeoutId = setTimeout(() => {
     resultMessageEl.textContent = "";
     resultMessageEl.className = "";
-  }, 1500); // 1000 ms = 1 second; increase if this feels too fast
+  }, 2000); // 1000 ms = 1 second; increase if this feels too fast
 }
 
 
