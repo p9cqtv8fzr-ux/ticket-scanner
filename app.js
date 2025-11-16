@@ -32,6 +32,11 @@ const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
+// New: sound elements
+const successSoundEl = document.getElementById("successSound");
+const errorSoundEl = document.getElementById("errorSound");
+
+// Result auto-clear
 let resultClearTimeoutId = null;
 
 function scheduleClearResult() {
@@ -43,8 +48,47 @@ function scheduleClearResult() {
   resultClearTimeoutId = setTimeout(() => {
     resultMessageEl.textContent = "";
     resultMessageEl.className = "";
-  }, 1500); // 1000 ms = 1 second; increase if this feels too fast
+    // remove flash colors from body
+    document.body.classList.remove("flash-success", "flash-error");
+  }, 2000); // 1 second; increase if you want longer
 }
+
+function playSuccess() {
+  if (!successSoundEl) return;
+  try {
+    successSoundEl.currentTime = 0;
+    successSoundEl.play().catch(() => {});
+  } catch (e) {
+    console.warn("Could not play success sound:", e);
+  }
+}
+
+function playError() {
+  if (!errorSoundEl) return;
+  try {
+    errorSoundEl.currentTime = 0;
+    errorSoundEl.play().catch(() => {});
+  } catch (e) {
+    console.warn("Could not play error sound:", e);
+  }
+}
+
+function triggerFeedback(type) {
+  // remove any previous flash classes
+  document.body.classList.remove("flash-success", "flash-error");
+
+  if (type === "success") {
+    document.body.classList.add("flash-success");
+    playSuccess();
+  } else if (type === "error") {
+    document.body.classList.add("flash-error");
+    playError();
+  }
+
+  // schedule clearing both text and flash
+  scheduleClearResult();
+}
+
 
 
 // New elements for QR scanner
@@ -76,38 +120,46 @@ async function loadTickets() {
 }
 
 // 2. Check a single ticket code
+
 function checkTicket(codeRaw) {
   const code = (codeRaw || "").trim();
 
   resultMessageEl.className = "";
+
   if (!code) {
     resultMessageEl.textContent = "Please enter a ticket code.";
-    scheduleClearResult();
+    triggerFeedback("error");
     return;
   }
 
   if (!validTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" is NOT valid.`;
     resultMessageEl.classList.add("result-invalid");
-    scheduleClearResult();
+    triggerFeedback("error");
     return;
   }
 
   if (usedTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" was already used.`;
     resultMessageEl.classList.add("result-used");
-    scheduleClearResult();
+    triggerFeedback("error");
     return;
   }
 
   // Mark as used
-usedTickets.add(code);
-saveUsedTicketsToStorage();
-resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
-resultMessageEl.classList.add("result-valid");
-  scheduleClearResult();
+  usedTickets.add(code);
+  // If you added localStorage saving earlier, keep this line:
+  // saveUsedTicketsToStorage && saveUsedTicketsToStorage();
 
+  resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
+  resultMessageEl.classList.add("result-valid");
+  triggerFeedback("success");
 }
+
+
+
+
+
 
 // 3. Manual input event listeners
 checkButtonEl.addEventListener("click", () => {
