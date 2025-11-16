@@ -36,6 +36,40 @@ const checkButtonEl = document.getElementById("checkButton");
 const successSoundEl = document.getElementById("successSound");
 const errorSoundEl = document.getElementById("errorSound");
 
+let audioPrimed = false;
+
+function primeAudio() {
+  if (audioPrimed) return;
+  const promises = [];
+
+  if (successSoundEl) {
+    successSoundEl.muted = true;
+    promises.push(
+      successSoundEl.play().then(() => {
+        successSoundEl.pause();
+        successSoundEl.currentTime = 0;
+        successSoundEl.muted = false;
+      }).catch(() => {})
+    );
+  }
+
+  if (errorSoundEl) {
+    errorSoundEl.muted = true;
+    promises.push(
+      errorSoundEl.play().then(() => {
+        errorSoundEl.pause();
+        errorSoundEl.currentTime = 0;
+        errorSoundEl.muted = false;
+      }).catch(() => {})
+    );
+  }
+
+  Promise.all(promises).finally(() => {
+    audioPrimed = true;
+  });
+}
+
+
 // Result auto-clear
 let resultClearTimeoutId = null;
 
@@ -245,6 +279,9 @@ function stopQrScanner() {
 // Button to toggle scanner on/off
 if (startScannerButtonEl) {
   startScannerButtonEl.addEventListener("click", () => {
+    // Prime audio on user tap so later automatic plays are allowed
+    primeAudio();
+
     if (!isScanning) {
       startQrScanner();
     } else {
@@ -252,6 +289,7 @@ if (startScannerButtonEl) {
     }
   });
 }
+
 
 // Initialize
 loadUsedTicketsFromStorage();
