@@ -46,10 +46,10 @@ const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
-let resultClearTimeoutId = null;
+let resultClearTimeoutId = null; // you may already have this from earlier
+let flashTimeoutId = null;
 
 function scheduleClearResult() {
-  // cancel any previous pending clear
   if (resultClearTimeoutId) {
     clearTimeout(resultClearTimeoutId);
   }
@@ -57,8 +57,25 @@ function scheduleClearResult() {
   resultClearTimeoutId = setTimeout(() => {
     resultMessageEl.textContent = "";
     resultMessageEl.className = "";
-  }, 3000); // 1000 ms = 1 second; increase if this feels too fast
+  }, 1000); // change duration if you like
 }
+
+function flashBody(colorClass) {
+  // Remove any existing flash + pending timeout
+  if (flashTimeoutId) {
+    clearTimeout(flashTimeoutId);
+  }
+  document.body.classList.remove("flash-green", "flash-red", "flash-amber");
+
+  // Add the new one
+  document.body.classList.add(colorClass);
+
+  // Remove it shortly after to "flash"
+  flashTimeoutId = setTimeout(() => {
+    document.body.classList.remove(colorClass);
+  }, 150); // 150ms flash; tweak longer if you want
+}
+
 
 
 // New elements for QR scanner
@@ -103,6 +120,7 @@ function checkTicket(codeRaw) {
   if (!validTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" is NOT valid.`;
     resultMessageEl.classList.add("result-invalid");
+    flashBody("flash-red");
     scheduleClearResult();
     return;
   }
@@ -110,6 +128,7 @@ function checkTicket(codeRaw) {
   if (usedTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" was already used.`;
     resultMessageEl.classList.add("result-used");
+    flashBody("flash-amber");
     scheduleClearResult();
     return;
   }
@@ -119,6 +138,7 @@ usedTickets.add(code);
 saveUsedTicketsToStorage();
 resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
 resultMessageEl.classList.add("result-valid");
+   flashBody("flash-green"); // green for OK
   scheduleClearResult();
 
 }
