@@ -70,3 +70,14 @@ button:active {
   color: #d17a0d;
   font-weight: bold;
 }
+/* Flash feedback on scan */
+body.flash-success {
+  background: #b8f5b8; /* light green */
+  transition: background-color 0.15s ease;
+}
+
+body.flash-error {
+  background: #f5b8b8; /* light red */
+  transition: background-color 0.15s ease;
+}
+
