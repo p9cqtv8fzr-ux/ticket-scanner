@@ -23,6 +23,13 @@ function resetUsedTickets() {
   resultMessageEl.className = "";
   resultMessageEl.textContent = "Used tickets reset on this device.";
 }
+const resetUsedTicketsButtonEl = document.getElementById("resetUsedTicketsButton");
+
+if (resetUsedTicketsButtonEl) {
+  resetUsedTicketsButtonEl.addEventListener("click", () => {
+    resetUsedTickets();
+  });
+}
 
 function saveUsedTicketsToStorage() {
   try {
