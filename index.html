@@ -35,11 +35,16 @@
     </section>
 
     <!-- Optional camera scanner area, hidden for now -->
-    <section class="scanner" id="scannerSection" style="display:none;">
-      <h2>Camera Scanner</h2>
-      <div id="qr-reader"></div>
-      <p id="cameraStatus"></p>
-    </section>
+<section class="scanner" id="scannerSection">
+  <h2>QR Scanner</h2>
+
+  <button id="startScannerButton">Start QR Scanner</button>
+  <p id="cameraStatus"></p>
+
+  <!-- html5-qrcode will put the camera view inside this div -->
+  <div id="qr-reader" style="width: 100%; max-width: 400px; margin-top: 1rem;"></div>
+</section>
+
   </main>
 
   <script src="app.js"></script>
