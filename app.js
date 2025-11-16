@@ -137,7 +137,7 @@ function startQrScanner() {
         checkTicket(decodedText);
 
         // Option 1: stop after each successful scan
-        stopQrScanner();
+        //stopQrScanner();
       },
       (errorMessage) => {
         // Errors during scanning; usually safe to ignore
