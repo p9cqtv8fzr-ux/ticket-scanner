@@ -47,7 +47,7 @@ const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
 // Cooldown between processing scans (in ms)
-const SCAN_COOLDOWN_MS = 800;
+const SCAN_COOLDOWN_MS = 2000;
 let lastScanTime = 0;
 
 
@@ -78,7 +78,7 @@ function flashBody(colorClass) {
   // Remove it shortly after to "flash"
   flashTimeoutId = setTimeout(() => {
     document.body.classList.remove(colorClass);
-  }, 800); // 150ms flash; tweak longer if you want
+  }, 2000); // 150ms flash; tweak longer if you want
 }
 
 
