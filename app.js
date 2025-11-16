@@ -32,82 +32,6 @@ const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
-// Sound elements
-const successSoundEl = document.getElementById("successSound");
-const errorSoundEl   = document.getElementById("errorSound");
-
-// For debug messages if sound fails
-const debugOutputEl = document.getElementById("cameraStatus") || resultMessageEl;
-
-function playSuccess() {
-  if (!successSoundEl) {
-    console.warn("successSound element not found");
-    return;
-  }
-  try {
-    successSoundEl.currentTime = 0;
-    const p = successSoundEl.play();
-    if (p && p.catch) {
-      p.catch(err => {
-        console.error("Success sound error:", err);
-        if (debugOutputEl) {
-          debugOutputEl.textContent = "Success sound error: " + err;
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Success sound error:", err);
-    if (debugOutputEl) {
-      debugOutputEl.textContent = "Success sound error: " + err;
-    }
-  }
-}
-
-function playError() {
-  if (!errorSoundEl) {
-    console.warn("errorSound element not found");
-    return;
-  }
-  try {
-    errorSoundEl.currentTime = 0;
-    const p = errorSoundEl.play();
-    if (p && p.catch) {
-      p.catch(err => {
-        console.error("Error sound error:", err);
-        if (debugOutputEl) {
-          debugOutputEl.textContent = "Error sound error: " + err;
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Error sound error:", err);
-    if (debugOutputEl) {
-      debugOutputEl.textContent = "Error sound error: " + err;
-    }
-  }
-}
-
-const testSuccessSoundButtonEl = document.getElementById("testSuccessSoundButton");
-const testErrorSoundButtonEl   = document.getElementById("testErrorSoundButton");
-
-if (testSuccessSoundButtonEl) {
-  testSuccessSoundButtonEl.addEventListener("click", () => {
-    playSuccess();
-  });
-}
-
-if (testErrorSoundButtonEl) {
-  testErrorSoundButtonEl.addEventListener("click", () => {
-    playError();
-  });
-}
-
-
-
-
-
-
-// Result auto-clear
 let resultClearTimeoutId = null;
 
 function scheduleClearResult() {
@@ -119,47 +43,8 @@ function scheduleClearResult() {
   resultClearTimeoutId = setTimeout(() => {
     resultMessageEl.textContent = "";
     resultMessageEl.className = "";
-    // remove flash colors from body
-    document.body.classList.remove("flash-success", "flash-error");
-  }, 2000); // 1 second; increase if you want longer
+  }, 1500); // 1000 ms = 1 second; increase if this feels too fast
 }
-
-function playSuccess() {
-  if (!successSoundEl) return;
-  try {
-    successSoundEl.currentTime = 0;
-    successSoundEl.play().catch(() => {});
-  } catch (e) {
-    console.warn("Could not play success sound:", e);
-  }
-}
-
-function playError() {
-  if (!errorSoundEl) return;
-  try {
-    errorSoundEl.currentTime = 0;
-    errorSoundEl.play().catch(() => {});
-  } catch (e) {
-    console.warn("Could not play error sound:", e);
-  }
-}
-
-function triggerFeedback(type) {
-  // remove any previous flash classes
-  document.body.classList.remove("flash-success", "flash-error");
-
-  if (type === "success") {
-    document.body.classList.add("flash-success");
-    playSuccess();
-  } else if (type === "error") {
-    document.body.classList.add("flash-error");
-    playError();
-  }
-
-  // schedule clearing both text and flash
-  scheduleClearResult();
-}
-
 
 
 // New elements for QR scanner
@@ -191,18 +76,12 @@ async function loadTickets() {
 }
 
 // 2. Check a single ticket code
-
 function checkTicket(codeRaw) {
   const code = (codeRaw || "").trim();
 
   resultMessageEl.className = "";
-
   if (!code) {
     resultMessageEl.textContent = "Please enter a ticket code.";
-    // error feedback
-    document.body.classList.remove("flash-success", "flash-error");
-    document.body.classList.add("flash-error");
-    playError();
     scheduleClearResult();
     return;
   }
@@ -210,9 +89,6 @@ function checkTicket(codeRaw) {
   if (!validTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" is NOT valid.`;
     resultMessageEl.classList.add("result-invalid");
-    document.body.classList.remove("flash-success", "flash-error");
-    document.body.classList.add("flash-error");
-    playError();
     scheduleClearResult();
     return;
   }
@@ -220,30 +96,18 @@ function checkTicket(codeRaw) {
   if (usedTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" was already used.`;
     resultMessageEl.classList.add("result-used");
-    document.body.classList.remove("flash-success", "flash-error");
-    document.body.classList.add("flash-error");
-    playError();
     scheduleClearResult();
     return;
   }
 
   // Mark as used
-  usedTickets.add(code);
-  // saveUsedTicketsToStorage && saveUsedTicketsToStorage();
-
-  resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
-  resultMessageEl.classList.add("result-valid");
-  document.body.classList.remove("flash-success", "flash-error");
-  document.body.classList.add("flash-success");
-  playSuccess();
+usedTickets.add(code);
+saveUsedTicketsToStorage();
+resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
+resultMessageEl.classList.add("result-valid");
   scheduleClearResult();
+
 }
-
-
-
-
-
-
 
 // 3. Manual input event listeners
 checkButtonEl.addEventListener("click", () => {
@@ -329,9 +193,6 @@ function stopQrScanner() {
 // Button to toggle scanner on/off
 if (startScannerButtonEl) {
   startScannerButtonEl.addEventListener("click", () => {
-    // Prime audio on user tap so later automatic plays are allowed
-    primeAudio();
-
     if (!isScanning) {
       startQrScanner();
     } else {
@@ -340,8 +201,6 @@ if (startScannerButtonEl) {
   });
 }
 
-
 // Initialize
 loadUsedTicketsFromStorage();
 loadTickets();
-
