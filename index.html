@@ -7,16 +7,31 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
+  
 <body>
   <header>
     <h1>King's PSA events</h1>
   </header>
 
+
+  
   <main>
-    <section class="status">
-      <p id="status">Loading tickets...</p>
+
+    <section class="result">
+      <h2>Result</h2>
+      <p id="resultMessage"></p>
     </section>
 
+        <!-- Optional camera scanner area, hidden for now -->
+    <section class="scanner" id="scannerSection">
+      <h2>QR Scanner</h2>
+  <!-- html5-qrcode will put the camera view inside this div -->
+      <div id="qr-reader" style="width: 100%; max-width: 400px; margin-top: 1rem;"></div>
+      <button id="startScannerButton">Start QR Scanner</button>
+      <p id="cameraStatus"></p>
+    </section>
+
+    
     <section class="manual-input">
       <label for="ticketInput">Enter / scan ticket code:</label>
       <input
@@ -29,22 +44,15 @@
       <button id="checkButton">Check Ticket</button>
     </section>
 
-    <section class="result">
-      <h2>Result</h2>
-      <p id="resultMessage"></p>
+    <section class="status">
+      <p id="status">Loading tickets...</p>
     </section>
 
-    <!-- Optional camera scanner area, hidden for now -->
-<section class="scanner" id="scannerSection">
-  <h2>QR Scanner</h2>
-  
-  <!-- html5-qrcode will put the camera view inside this div -->
-  <div id="qr-reader" style="width: 100%; max-width: 400px; margin-top: 1rem;"></div>
-  
-  <button id="startScannerButton">Start QR Scanner</button>
-  <p id="cameraStatus"></p>
+    <section class="admin">
+      <h2>Admin</h2>
+      <button id="resetUsedTicketsButton">Reset Used Tickets (this device only)</button>
+    </section>
 
-</section>
 
   </main>
 
