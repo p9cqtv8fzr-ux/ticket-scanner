@@ -46,6 +46,22 @@ function scheduleClearResult() {
   }, 1500); // 1000 ms = 1 second; increase if this feels too fast
 }
 
+function flashBody(colorClass) {
+  // Remove any existing flash + pending timeout
+  if (flashTimeoutId) {
+    clearTimeout(flashTimeoutId);
+  }
+  document.body.classList.remove("flash-green", "flash-red", "flash-amber");
+
+  // Add the new one
+  document.body.classList.add(colorClass);
+
+  // Remove it shortly after to "flash"
+  flashTimeoutId = setTimeout(() => {
+    document.body.classList.remove(colorClass);
+  }, 1500); // 150ms flash; tweak longer if you want
+}
+
 
 // New elements for QR scanner
 const scannerSectionEl = document.getElementById("scannerSection");
@@ -89,6 +105,7 @@ function checkTicket(codeRaw) {
   if (!validTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" is NOT valid.`;
     resultMessageEl.classList.add("result-invalid");
+     flashBody("flash-red");
     scheduleClearResult();
     return;
   }
@@ -96,6 +113,7 @@ function checkTicket(codeRaw) {
   if (usedTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" was already used.`;
     resultMessageEl.classList.add("result-used");
+     flashBody("flash-amber");
     scheduleClearResult();
     return;
   }
@@ -105,6 +123,7 @@ usedTickets.add(code);
 saveUsedTicketsToStorage();
 resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
 resultMessageEl.classList.add("result-valid");
+  flashBody("flash-green")
   scheduleClearResult();
 
 }
