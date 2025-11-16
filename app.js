@@ -32,42 +32,79 @@ const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
-// New: sound elements
+// Sound elements
 const successSoundEl = document.getElementById("successSound");
-const errorSoundEl = document.getElementById("errorSound");
+const errorSoundEl   = document.getElementById("errorSound");
 
-let audioPrimed = false;
+// For debug messages if sound fails
+const debugOutputEl = document.getElementById("cameraStatus") || resultMessageEl;
 
-function primeAudio() {
-  if (audioPrimed) return;
-  const promises = [];
-
-  if (successSoundEl) {
-    successSoundEl.muted = true;
-    promises.push(
-      successSoundEl.play().then(() => {
-        successSoundEl.pause();
-        successSoundEl.currentTime = 0;
-        successSoundEl.muted = false;
-      }).catch(() => {})
-    );
+function playSuccess() {
+  if (!successSoundEl) {
+    console.warn("successSound element not found");
+    return;
   }
-
-  if (errorSoundEl) {
-    errorSoundEl.muted = true;
-    promises.push(
-      errorSoundEl.play().then(() => {
-        errorSoundEl.pause();
-        errorSoundEl.currentTime = 0;
-        errorSoundEl.muted = false;
-      }).catch(() => {})
-    );
+  try {
+    successSoundEl.currentTime = 0;
+    const p = successSoundEl.play();
+    if (p && p.catch) {
+      p.catch(err => {
+        console.error("Success sound error:", err);
+        if (debugOutputEl) {
+          debugOutputEl.textContent = "Success sound error: " + err;
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Success sound error:", err);
+    if (debugOutputEl) {
+      debugOutputEl.textContent = "Success sound error: " + err;
+    }
   }
+}
 
-  Promise.all(promises).finally(() => {
-    audioPrimed = true;
+function playError() {
+  if (!errorSoundEl) {
+    console.warn("errorSound element not found");
+    return;
+  }
+  try {
+    errorSoundEl.currentTime = 0;
+    const p = errorSoundEl.play();
+    if (p && p.catch) {
+      p.catch(err => {
+        console.error("Error sound error:", err);
+        if (debugOutputEl) {
+          debugOutputEl.textContent = "Error sound error: " + err;
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Error sound error:", err);
+    if (debugOutputEl) {
+      debugOutputEl.textContent = "Error sound error: " + err;
+    }
+  }
+}
+
+const testSuccessSoundButtonEl = document.getElementById("testSuccessSoundButton");
+const testErrorSoundButtonEl   = document.getElementById("testErrorSoundButton");
+
+if (testSuccessSoundButtonEl) {
+  testSuccessSoundButtonEl.addEventListener("click", () => {
+    playSuccess();
   });
 }
+
+if (testErrorSoundButtonEl) {
+  testErrorSoundButtonEl.addEventListener("click", () => {
+    playError();
+  });
+}
+
+
+
+
 
 
 // Result auto-clear
@@ -162,33 +199,46 @@ function checkTicket(codeRaw) {
 
   if (!code) {
     resultMessageEl.textContent = "Please enter a ticket code.";
-    triggerFeedback("error");
+    // error feedback
+    document.body.classList.remove("flash-success", "flash-error");
+    document.body.classList.add("flash-error");
+    playError();
+    scheduleClearResult();
     return;
   }
 
   if (!validTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" is NOT valid.`;
     resultMessageEl.classList.add("result-invalid");
-    triggerFeedback("error");
+    document.body.classList.remove("flash-success", "flash-error");
+    document.body.classList.add("flash-error");
+    playError();
+    scheduleClearResult();
     return;
   }
 
   if (usedTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" was already used.`;
     resultMessageEl.classList.add("result-used");
-    triggerFeedback("error");
+    document.body.classList.remove("flash-success", "flash-error");
+    document.body.classList.add("flash-error");
+    playError();
+    scheduleClearResult();
     return;
   }
 
   // Mark as used
   usedTickets.add(code);
-  // If you added localStorage saving earlier, keep this line:
   // saveUsedTicketsToStorage && saveUsedTicketsToStorage();
 
   resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
   resultMessageEl.classList.add("result-valid");
-  triggerFeedback("success");
+  document.body.classList.remove("flash-success", "flash-error");
+  document.body.classList.add("flash-success");
+  playSuccess();
+  scheduleClearResult();
 }
+
 
 
 
