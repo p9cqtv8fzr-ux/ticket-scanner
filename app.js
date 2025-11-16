@@ -3,6 +3,14 @@ let usedTickets = new Set();
 
 const USED_TICKETS_KEY = "usedTickets";
 
+function resetUsedTickets() {
+  usedTickets.clear();                       // clear the Set in memory
+  localStorage.removeItem(USED_TICKETS_KEY); // remove from localStorage
+  resultMessageEl.className = "";
+  resultMessageEl.textContent = "Used tickets reset on this device.";
+}
+
+
 function loadUsedTicketsFromStorage() {
   try {
     const stored = localStorage.getItem(USED_TICKETS_KEY);
