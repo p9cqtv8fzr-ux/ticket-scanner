@@ -17,20 +17,6 @@ function loadUsedTicketsFromStorage() {
   }
 }
 
-function resetUsedTickets() {
-  usedTickets.clear();                       // clear the Set in memory
-  localStorage.removeItem(USED_TICKETS_KEY); // remove from localStorage
-  resultMessageEl.className = "";
-  resultMessageEl.textContent = "Used tickets reset on this device.";
-}
-const resetUsedTicketsButtonEl = document.getElementById("resetUsedTicketsButton");
-
-if (resetUsedTicketsButtonEl) {
-  resetUsedTicketsButtonEl.addEventListener("click", () => {
-    resetUsedTickets();
-  });
-}
-
 function saveUsedTicketsToStorage() {
   try {
     const arr = Array.from(usedTickets);
@@ -46,15 +32,10 @@ const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
-// Cooldown between processing scans (in ms)
-const SCAN_COOLDOWN_MS = 2000;
-let lastScanTime = 0;
-
-
-let resultClearTimeoutId = null; // you may already have this from earlier
-let flashTimeoutId = null;
+let resultClearTimeoutId = null;
 
 function scheduleClearResult() {
+  // cancel any previous pending clear
   if (resultClearTimeoutId) {
     clearTimeout(resultClearTimeoutId);
   }
@@ -62,25 +43,8 @@ function scheduleClearResult() {
   resultClearTimeoutId = setTimeout(() => {
     resultMessageEl.textContent = "";
     resultMessageEl.className = "";
-  }, 1000); // change duration if you like
+  }, 1500); // 1000 ms = 1 second; increase if this feels too fast
 }
-
-function flashBody(colorClass) {
-  // Remove any existing flash + pending timeout
-  if (flashTimeoutId) {
-    clearTimeout(flashTimeoutId);
-  }
-  document.body.classList.remove("flash-green", "flash-red", "flash-amber");
-
-  // Add the new one
-  document.body.classList.add(colorClass);
-
-  // Remove it shortly after to "flash"
-  flashTimeoutId = setTimeout(() => {
-    document.body.classList.remove(colorClass);
-  }, 2000); // 150ms flash; tweak longer if you want
-}
-
 
 
 // New elements for QR scanner
@@ -125,7 +89,6 @@ function checkTicket(codeRaw) {
   if (!validTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" is NOT valid.`;
     resultMessageEl.classList.add("result-invalid");
-    flashBody("flash-red");
     scheduleClearResult();
     return;
   }
@@ -133,7 +96,6 @@ function checkTicket(codeRaw) {
   if (usedTickets.has(code)) {
     resultMessageEl.textContent = `Ticket "${code}" was already used.`;
     resultMessageEl.classList.add("result-used");
-    flashBody("flash-amber");
     scheduleClearResult();
     return;
   }
@@ -143,7 +105,6 @@ usedTickets.add(code);
 saveUsedTicketsToStorage();
 resultMessageEl.textContent = `Ticket "${code}" is VALID. Welcome!`;
 resultMessageEl.classList.add("result-valid");
-   flashBody("flash-green"); // green for OK
   scheduleClearResult();
 
 }
@@ -184,31 +145,24 @@ function startQrScanner() {
     qrbox: { width: 250, height: 250 }
   };
 
-html5QrCode
-  .start(
-    { facingMode: "environment" },
-    config,
-    (decodedText, decodedResult) => {
-  const now = Date.now();
+  // Use the back camera on mobile with facingMode: environment
+  html5QrCode
+    .start(
+      { facingMode: "environment" },
+      config,
+      (decodedText, decodedResult) => {
+        // When a QR code is successfully scanned
+        ticketInputEl.value = decodedText;
+        checkTicket(decodedText);
 
-  // Throttle scans: ignore if last scan was too recent
-  if (now - lastScanTime < SCAN_COOLDOWN_MS) {
-    return;
-  }
-  lastScanTime = now;
-
-  // When a QR code is successfully scanned
-  ticketInputEl.value = decodedText;
-  checkTicket(decodedText);
-  // camera keeps running
-}
-
+        // Option 1: stop after each successful scan
+        //stopQrScanner();
+      },
+      (errorMessage) => {
+        // Errors during scanning; usually safe to ignore
+        // console.warn(`QR scan error: ${errorMessage}`);
+      }
     )
-
-
-
-
-    
     .then(() => {
       isScanning = true;
       cameraStatusEl.textContent = "Point your camera at a QR code.";
