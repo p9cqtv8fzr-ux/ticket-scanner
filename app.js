@@ -184,7 +184,11 @@ function startQrScanner() {
     qrbox: { width: 250, height: 250 }
   };
 
-(decodedText, decodedResult) => {
+html5QrCode
+  .start(
+    { facingMode: "environment" },
+    config,
+    (decodedText, decodedResult) => {
   const now = Date.now();
 
   // Throttle scans: ignore if last scan was too recent
