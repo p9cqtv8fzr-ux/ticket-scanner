@@ -46,6 +46,11 @@ const resultMessageEl = document.getElementById("resultMessage");
 const ticketInputEl = document.getElementById("ticketInput");
 const checkButtonEl = document.getElementById("checkButton");
 
+// Cooldown between processing scans (in ms)
+const SCAN_COOLDOWN_MS = 800;
+let lastScanTime = 0;
+
+
 let resultClearTimeoutId = null; // you may already have this from earlier
 let flashTimeoutId = null;
 
@@ -179,24 +184,27 @@ function startQrScanner() {
     qrbox: { width: 250, height: 250 }
   };
 
-  // Use the back camera on mobile with facingMode: environment
-  html5QrCode
-    .start(
-      { facingMode: "environment" },
-      config,
-      (decodedText, decodedResult) => {
-        // When a QR code is successfully scanned
-        ticketInputEl.value = decodedText;
-        checkTicket(decodedText);
+(decodedText, decodedResult) => {
+  const now = Date.now();
 
-        // Option 1: stop after each successful scan
-        //stopQrScanner();
-      },
-      (errorMessage) => {
-        // Errors during scanning; usually safe to ignore
-        // console.warn(`QR scan error: ${errorMessage}`);
-      }
+  // Throttle scans: ignore if last scan was too recent
+  if (now - lastScanTime < SCAN_COOLDOWN_MS) {
+    return;
+  }
+  lastScanTime = now;
+
+  // When a QR code is successfully scanned
+  ticketInputEl.value = decodedText;
+  checkTicket(decodedText);
+  // camera keeps running
+}
+
     )
+
+
+
+
+    
     .then(() => {
       isScanning = true;
       cameraStatusEl.textContent = "Point your camera at a QR code.";
