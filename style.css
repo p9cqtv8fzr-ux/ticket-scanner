@@ -73,16 +73,16 @@ button:active {
 
 /* Flash background colors for scan results */
 body.flash-green {
-  background: #d6fada; /* light green */
+  background: #00FF00; /* light green */
   transition: background 1s ease-out;
 }
 
 body.flash-red {
-  background: #ffd6d6; /* light red */
+  background: #FF0000; /* light red */
   transition: background 1s ease-out;
 }
 
 body.flash-amber {
-  background: #ffe9c2; /* light amber/orange */
+  background: #FFBF00; /* light amber/orange */
   transition: background 1s ease-out;
 }
